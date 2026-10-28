@@ -1,0 +1,52 @@
+version: '3.8'
+
+volumes:
+  proxy-data:
+  manager-data:
+  postgresql-data:
+
+services:
+  proxy:
+    image: openremote/proxy:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8883:8883" # MQTT Port
+    environment:
+      # ADVANCED: Change to your domain or your computer's IP
+      DOMAINNAME: ${OR_HOSTNAME:-localhost}
+      LE_EMAIL: ${OR_EMAIL_ADMIN:-youremail@example.com}
+    volumes:
+      - proxy-data:/deployment
+
+  postgresql:
+    image: openremote/postgresql:latest
+    restart: always
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+      - manager-data:/storage
+
+  keycloak:
+    image: openremote/keycloak:latest
+    restart: always
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+      # ADVANCED: Set a strong initial admin password
+      KEYCLOAK_ADMIN_PASSWORD: ${OR_ADMIN_PASSWORD:-secret}
+      KC_HOSTNAME: ${OR_HOSTNAME:-localhost}
+
+  manager:
+    image: openremote/manager:latest
+    restart: always
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      OR_HOSTNAME: ${OR_HOSTNAME:-localhost}
+      OR_ADMIN_PASSWORD: ${OR_ADMIN_PASSWORD:-secret}
+      # ADVANCED: Set your timezone
+      TZ: "Europe/Amsterdam" 
+      OR_SETUP_TYPE: "production"

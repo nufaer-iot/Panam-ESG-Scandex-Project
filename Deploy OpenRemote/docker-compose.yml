@@ -1,0 +1,53 @@
+volumes:
+  proxy-data:
+  manager-data:
+  postgresql-data:
+
+services:
+  proxy:
+    image: openremote/proxy:latest
+    restart: always
+    ports:
+      - "9000:80"
+      - "9443:443"
+      - "8883:8883"
+    environment:
+      DOMAINNAME: ${OR_HOSTNAME:-localhost}
+      LE_EMAIL: ${OR_EMAIL_ADMIN:-youremail@example.com}
+      # 1. FIX: Tells the proxy to pass the correct port to the internal services
+      HTTPS_FORWARDED_PORT: 9443
+    volumes:
+      - proxy-data:/deployment
+
+  postgresql:
+    image: openremote/postgresql:latest
+    restart: always
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+      - manager-data:/storage
+
+  keycloak:
+    image: openremote/keycloak:latest
+    restart: always
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_ADMIN_PASSWORD: ${OR_ADMIN_PASSWORD:-secret}
+      KC_HOSTNAME: ${OR_HOSTNAME:-localhost}
+      # 2. FIX: Ensures Keycloak generates login links with the 9443 port
+      KC_HOSTNAME_PORT: 9443
+
+  manager:
+    image: openremote/manager:latest
+    restart: always
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      OR_HOSTNAME: ${OR_HOSTNAME:-localhost}
+      OR_ADMIN_PASSWORD: ${OR_ADMIN_PASSWORD:-secret}
+      OR_SETUP_TYPE: "developer"
+      # 3. FIX: Critical for stopping the 403 CORS/Forbidden error on custom ports
+      OR_SSL_PORT: 9443
+      OR_CORS_ALLOWED_ORIGINS: "https://localhost:9443"

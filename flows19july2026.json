@@ -1,0 +1,813 @@
+[
+    {
+        "id": "e013fbbf3428f3ef",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "bc59724a5199bee5",
+        "type": "inject",
+        "z": "e013fbbf3428f3ef",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1200",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 40,
+        "wires": [
+            [
+                "f24d51d79f442f54"
+            ]
+        ]
+    },
+    {
+        "id": "f24d51d79f442f54",
+        "type": "function",
+        "z": "e013fbbf3428f3ef",
+        "name": "① Init Queue",
+        "func": "// ─────────────────────────────────────────────────────────\n// MASTER METER LIST — add / remove meters here only.\n// ─────────────────────────────────────────────────────────\nconst allJobs = [\n    {\n        name: \"Dryer & Soft Winding_PowerMeter\",\n        unitid: 1, server: \"fa898c0037dca726\",\n        meterName: \"Dryer & Soft Winding\", location: \"Utility-2\",\n        reading_type: \"Power Usage\", erp_id: \"9\", uom: \"KWh\",\n        fc: 3, address: 3203, quantity: 4, dataType: \"uint64\", wordOrder: \"BE\", scale: 0.001\n    },\n    {\n        name: \"Hard Winding & Garments_PowerMeter\",\n        unitid: 2, server: \"fa898c0037dca726\",\n        meterName: \"Hard Winding & Garments\", location: \"Utility-2\",\n        reading_type: \"Power Usage\", erp_id: \"10\", uom: \"KWh\",\n        fc: 3, address: 3203, quantity: 4, dataType: \"uint64\", wordOrder: \"BE\", scale: 0.001\n    },\n    {\n        name: \"Yarn Dying_PowerMeter\",\n        unitid: 3, server: \"fa898c0037dca726\",\n        meterName: \"Yarn Dying\", location: \"Utility-2\",\n        reading_type: \"Power Usage\", erp_id: \"3\", uom: \"KWh\",\n        fc: 3, address: 3203, quantity: 4, dataType: \"uint64\", wordOrder: \"BE\", scale: 0.001\n    },\n    {\n        name: \"WTP_PowerMeter\",\n        unitid: 4, server: \"c85bce3fcadfec81\",\n        meterName: \"WTP\", location: \"Utility-2\",\n        reading_type: \"Power Usage\", erp_id: \"4\", uom: \"KWh\",\n        fc: 3, address: 223, quantity: 2, dataType: \"float32\", wordOrder: \"LE\", scale: 0.000001\n    },\n    {\n        name: \"Knitting_PowerMeter\",\n        unitid: 7, server: \"f41904d838d82433\",\n        meterName: \"Knitting\", location: \"Utility-2\",\n        reading_type: \"Power Usage\", erp_id: \"7\", uom: \"KWh\",\n        fc: 3, address: 223, quantity: 2, dataType: \"float32\", wordOrder: \"LE\", scale: 0.000001\n    },\n    {\n        name: \"Knit Dying_PowerMeter\",\n        unitid: 8, server: \"848fbf1da1412434\",\n        meterName: \"Knit Dying\", location: \"Utility-1\",\n        reading_type: \"Power Usage\", erp_id: \"8\", uom: \"KWh\",\n        fc: 3, address: 3203, quantity: 4, dataType: \"uint64\", wordOrder: \"BE\", scale: 0.001\n    },\n    {\n        name: \"Domestic Water Intake-1_FlowMeter\",\n        unitid: 11, server: \"178b05dcc49c6a3b\",\n        meterName: \"Domestic Water Intake-1\", location: \"Utility-1\",\n        reading_type: \"Water Intake\", erp_id: \"11\", uom: \"CBM\",\n        fc: 3, address: 144, quantity: 4, dataType: \"float64\", wordOrder: \"LE\", scale: 1\n    },\n    {\n        name: \"Domestic Water Intake-2_FlowMeter\",\n        unitid: 12, server: \"178b05dcc49c6a3b\",\n        meterName: \"Domestic Water Intake-2\", location: \"Utility-1\",\n        reading_type: \"Water Intake\", erp_id: \"12\", uom: \"CBM\",\n        fc: 3, address: 144, quantity: 4, dataType: \"float64\", wordOrder: \"LE\", scale: 1\n    },\n    {\n        name: \"Boilar Intake_FlowMeter\",\n        unitid: 13, server: \"178b05dcc49c6a3b\",\n        meterName: \"Boilar Intake\", location: \"Utility-1\",\n        reading_type: \"Water Usage\", erp_id: \"13\", uom: \"CBM\",\n        fc: 3, address: 144, quantity: 4, dataType: \"float64\", wordOrder: \"LE\", scale: 1\n    },\n    {\n        name: \"Generator Cooling_FlowMeter\",\n        unitid: 14, server: \"178b05dcc49c6a3b\",\n        meterName: \"Generator Cooling\", location: \"Utility-1\",\n        reading_type: \"Water Usage\", erp_id: \"14\", uom: \"CBM\",\n        fc: 3, address: 144, quantity: 4, dataType: \"float64\", wordOrder: \"LE\", scale: 1\n    },\n    {\n        name: \"Generator Cooling_FlowMeter_U2\",\n        unitid: 15, server: \"654cbb80e0881f27\",\n        meterName: \"Generator Cooling\", location: \"Utility-2\",\n        reading_type: \"Water Usage\", erp_id: \"16\", uom: \"CBM\",\n        fc: 3, address: 144, quantity: 4, dataType: \"float64\", wordOrder: \"LE\", scale: 1\n    },\n    {\n        name: \"Boilar Intake_FlowMeter_U2\",\n        unitid: 16, server: \"654cbb80e0881f27\",\n        meterName: \"Boilar Intake\", location: \"Utility-2\",\n        reading_type: \"Water Usage\", erp_id: \"17\", uom: \"CBM\",\n        fc: 3, address: 144, quantity: 4, dataType: \"float64\", wordOrder: \"LE\", scale: 1\n    },\n    {\n        name: \"Rain Water_FlowMeter\",\n        unitid: 17, server: \"5675d7785adf14a2\",\n        meterName: \"Rain Water\", location: \"Yearn Dying Building\",\n        reading_type: \"Water Usage\", erp_id: \"18\", uom: \"CBM\",\n        fc: 3, address: 19, quantity: 4, dataType: \"float64\", wordOrder: \"BE\", scale: 1\n    }\n];\n\nflow.set(\"queue\", allJobs);\nflow.set(\"queueIndex\", 0);\nnode.log(\"Queue initialised — \" + allJobs.length + \" meters to read.\");\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 40,
+        "wires": [
+            [
+                "1b99c8f9b1a13d05"
+            ]
+        ]
+    },
+    {
+        "id": "1b99c8f9b1a13d05",
+        "type": "function",
+        "z": "e013fbbf3428f3ef",
+        "name": "② Dispatch Next",
+        "func": "const jobs = flow.get(\"queue\");\nconst i    = flow.get(\"queueIndex\") || 0;\n\nif (!jobs || i >= jobs.length) {\n    node.log(\"✅ All \" + (jobs ? jobs.length : 0) + \" meters read. Waiting for next cycle.\");\n    return null;\n}\n\nmsg.retry = 0;\n\nconst job = jobs[i];\nflow.set(\"queueIndex\", i + 1);\n\nnode.log(\"[\" + (i + 1) + \"/\" + jobs.length + \"] Reading: \" + job.name);\n\n// Generate a unique lock ID for this specific dispatch thread\nconst dId = Date.now();\nflow.set(\"currentDispatchId\", dId);\nflow.set(\"activeMeter\", job.erp_id);\nflow.set(\"modbusDispatchTime\", dId);\n\nmsg.job        = job;\nmsg.dispatchId = dId;\nmsg.topic      = job.name;\nmsg.serverId   = job.server;\nmsg.payload    = {\n    fc:       job.fc,\n    unitid:   job.unitid,\n    address:  job.address,\n    quantity: job.quantity\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 40,
+        "wires": [
+            [
+                "7a47cb612614c68f"
+            ]
+        ]
+    },
+    {
+        "id": "7a47cb612614c68f",
+        "type": "switch",
+        "z": "e013fbbf3428f3ef",
+        "name": "③ Route to Server",
+        "property": "serverId",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "178b05dcc49c6a3b",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "654cbb80e0881f27",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "fa898c0037dca726",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "c85bce3fcadfec81",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "848fbf1da1412434",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "5675d7785adf14a2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "f41904d838d82433",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 7,
+        "x": 250,
+        "y": 240,
+        "wires": [
+            [
+                "0bc33650781bf36e"
+            ],
+            [
+                "6fc061d7e943a576"
+            ],
+            [
+                "ad6703604fc2844b"
+            ],
+            [
+                "24c44ce7e8db1f49"
+            ],
+            [
+                "58563c41c297c28b"
+            ],
+            [
+                "8e9432065f4e158e"
+            ],
+            [
+                "ab104f24cd614e83"
+            ]
+        ]
+    },
+    {
+        "id": "0821cd8ae46f3dee",
+        "type": "function",
+        "z": "e013fbbf3428f3ef",
+        "name": "④ Conversion",
+        "func": "let currentDispatchId = flow.get('currentDispatchId');\nlet job = msg.job || {};\n\nif (msg.dispatchId !== currentDispatchId || !currentDispatchId) {\n    return null; // Silently drop ghost processes\n}\n\n// We got a successful read! DESTROY the lock so no stuttering errors can trigger retries.\nflow.set('currentDispatchId', null);\nflow.set('modbusDispatchTime', 0);\n\nfunction getTimestamp() {\n    let now = new Date();\n\n    // Subtract 5 seconds to account for network delay and clock drift\n    now.setSeconds(now.getSeconds() - 5);\n    \n    let yyyy = now.getFullYear();\n    let mm   = String(now.getMonth() + 1).padStart(2, '0');\n    let dd   = String(now.getDate()).padStart(2, '0');\n    let hh   = String(now.getHours()).padStart(2, '0');\n    let min  = String(now.getMinutes()).padStart(2, '0');\n    let ss   = String(now.getSeconds()).padStart(2, '0');\n    return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;\n}\n\nfunction swapWords16(arr) {\n    if (!Array.isArray(arr) || arr.length < 2) return arr;\n    let out = [];\n    for (let i = 0; i < arr.length; i += 2) {\n        if (i + 1 < arr.length) out.push(arr[i + 1], arr[i]);\n        else                    out.push(arr[i]);\n    }\n    return out;\n}\n\nfunction regsToBuffer(regs) {\n    const buf = Buffer.alloc(regs.length * 2);\n    for (let i = 0; i < regs.length; i++) buf.writeUInt16BE(regs[i] & 0xFFFF, i * 2);\n    return buf;\n}\n\nfunction toBigInt64FromRegs(regs, wordOrder) {\n    let r = regs.slice();\n    if (wordOrder === \"LE\") r = swapWords16(r);\n    let value = 0n;\n    for (let i = 0; i < r.length; i++) value = (value << 16n) | BigInt(r[i] & 0xFFFF);\n    return value;\n}\n\nlet regs = [];\n\nif (msg.payload && Array.isArray(msg.payload.data)) {\n    regs = msg.payload.data;\n} else if (Array.isArray(msg.payload)) {\n    regs = msg.payload;\n} else {\n    node.warn(\"No register array found in msg.payload.data\");\n    return null;\n}\n\nlet dataType  = (job.dataType  || \"\").toLowerCase();\nlet wordOrder = job.wordOrder  || \"BE\";\nlet scale     = Number(job.scale || 1);\nlet value     = null;\n\ntry {\n    if (dataType === \"float32\") {\n        let r = regs.slice(0, 2);\n        if (wordOrder === \"LE\") r = swapWords16(r);\n        value = regsToBuffer(r).readFloatBE(0) * scale;\n    } else if (dataType === \"uint32\") {\n        let r = regs.slice(0, 2);\n        if (wordOrder === \"LE\") r = swapWords16(r);\n        value = regsToBuffer(r).readUInt32BE(0) * scale;\n    } else if (dataType === \"int32\") {\n        let r = regs.slice(0, 2);\n        if (wordOrder === \"LE\") r = swapWords16(r);\n        value = regsToBuffer(r).readInt32BE(0) * scale;\n    } else if (dataType === \"uint64\") {\n        let r = regs.slice(0, 4);\n        value = Number(toBigInt64FromRegs(r, wordOrder)) * scale;\n    } else if (dataType === \"uint16\") {\n        value = (regs[0] || 0) * scale;\n    } else if (dataType === \"int16\") {\n        let v = regs[0] || 0;\n        if (v > 32767) v -= 65536;\n        value = v * scale;\n    } else if (dataType === \"float64\") {\n        let r = regs.slice(0, 4);\n        if (wordOrder === \"LE\") r = r.reverse();\n        value = regsToBuffer(r).readDoubleBE(0) * scale;\n    } else {\n        value = regs;\n    }\n\n    msg.payload = {\n        sensor_id:     job.erp_id       || null,\n        reading_type:  job.reading_type || null,\n        reading_time:  getTimestamp(),\n        meter_reading: value,\n        uom:           job.uom          || null\n    };\n\n    node.log('✅ Modbus Read Success! Forwarding erp_id ' + job.erp_id + ' to ERPNext...');\n    return msg;\n\n} catch (err) {\n    node.error(\"Conversion failed: \" + err.message, msg);\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 900,
+        "y": 320,
+        "wires": [
+            [
+                "bcdd1e21cd99fb6a"
+            ]
+        ]
+    },
+    {
+        "id": "bcdd1e21cd99fb6a",
+        "type": "http request",
+        "z": "e013fbbf3428f3ef",
+        "name": "⑤ POST to ERPNext",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://138.2.80.229/api/resource/ESG Meter Reading",
+        "tls": "",
+        "persist": true,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": true,
+        "headers": [
+            {
+                "keyType": "Authorization",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "token 7f2012cf4efe640:fd00d9063ca3d20"
+            },
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 920,
+        "y": 240,
+        "wires": [
+            [
+                "new_verify_api_node"
+            ]
+        ]
+    },
+    {
+        "id": "new_verify_api_node",
+        "type": "function",
+        "z": "e013fbbf3428f3ef",
+        "name": "⑧ Verify API Response",
+        "func": "let job = msg.job || {};\n\nif (msg.statusCode && msg.statusCode >= 400) {\n    node.error(\"❌ ERPNext API Rejected erp_id \" + (job.erp_id||'?') + \" (Code \" + msg.statusCode + \"): \" + JSON.stringify(msg.payload));\n} else if (msg.statusCode) {\n    node.log(\"✅ ERPNext Accepted erp_id \" + (job.erp_id||'?'));\n} else {\n    node.error(\"❌ HTTP Request failed completely for erp_id \" + (job.erp_id||'?'));\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 180,
+        "wires": [
+            [
+                "df0c2593c067a4c5"
+            ]
+        ]
+    },
+    {
+        "id": "59fdb21a2062ec20",
+        "type": "function",
+        "z": "e013fbbf3428f3ef",
+        "name": "⑦ Retry/Skip on Error",
+        "func": "let job = msg.job || {};\nlet currentDispatchId = flow.get('currentDispatchId');\n\nif (!currentDispatchId) {\n    return [null, null];\n}\n\nflow.set('currentDispatchId', null);\n\nlet retry = msg.retry || 0;\n\nlet errMsg = 'unknown error';\ntry {\n    if (msg.error && msg.error.message)                                                      errMsg = msg.error.message;\n    else if (msg.payload instanceof Error)                                                   errMsg = msg.payload.message;\n    else if (msg.payload && msg.payload.__enc__ && msg.payload.data && msg.payload.data.message) errMsg = msg.payload.data.message;\n    else if (msg.payload && msg.payload.data && msg.payload.data.message)                    errMsg = msg.payload.data.message;\n    else if (typeof msg.payload === 'string')                                                errMsg = msg.payload;\n    else if (msg.payload && msg.payload.message)                                             errMsg = msg.payload.message;\n} catch(e){}\n\nif (retry < 2) {\n    msg.retry = retry + 1;\n    \n    // EXPONENTIAL BACKOFF: 30s then 45s\n    const delaySeconds = retry === 1 ? 30 : 45;\n    \n    node.warn('⚠️ Retry ' + msg.retry + '/2 — erp_id: ' + (job.erp_id||'?') +\n              ' | delay: ' + delaySeconds + 's | reason: ' + errMsg);\n    msg.payload = { fc: job.fc, unitid: job.unitid, address: job.address, quantity: job.quantity };\n    \n    let newId = Date.now();\n    flow.set('currentDispatchId', newId);\n    msg.dispatchId = newId;\n    flow.set('modbusDispatchTime', newId);\n    \n    msg.retryDelaySeconds = delaySeconds;\n    \n    return [msg, null];\n\n} else {\n    msg.retry = 0;\n    node.warn('❌ Final fail, skipping — erp_id: ' + (job.erp_id || '?'));\n\n    // CRITICAL: Clear state before moving to next meter\n    flow.set('modbusDispatchTime', 0);\n    flow.set('currentDispatchId', null);\n    flow.set('activeMeter', null);\n\n    return [null, { payload: \"skip\" }];\n}",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1040,
+        "y": 540,
+        "wires": [
+            [
+                "1351651edfa31e28"
+            ],
+            [
+                "df0c2593c067a4c5"
+            ]
+        ]
+    },
+    {
+        "id": "df0c2593c067a4c5",
+        "type": "delay",
+        "z": "e013fbbf3428f3ef",
+        "name": "⑥ 50s delay",
+        "pauseType": "delay",
+        "timeout": "50",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 910,
+        "y": 100,
+        "wires": [
+            [
+                "af1b21ed41ff0f44"
+            ]
+        ]
+    },
+    {
+        "id": "1351651edfa31e28",
+        "type": "delay",
+        "z": "e013fbbf3428f3ef",
+        "name": "retryDelay",
+        "pauseType": "delay",
+        "timeout": "30",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1130,
+        "y": 480,
+        "wires": [
+            [
+                "7a47cb612614c68f"
+            ]
+        ]
+    },
+    {
+        "id": "1fb0bf2a98ef0ff8",
+        "type": "function",
+        "z": "e013fbbf3428f3ef",
+        "name": "⑨ Skip stuck meter",
+        "func": "const modbusDispatchTime = flow.get('modbusDispatchTime') || 0;\n\n// Only act when a Modbus request is actually in flight\nif (modbusDispatchTime <= 0) return null;\n\nconst age = Date.now() - modbusDispatchTime;\n\nif (age > 50000) {\n    const activeMeter = flow.get('activeMeter');\n    const i           = flow.get('queueIndex') || 0;\n    const jobs        = flow.get('queue')      || [];\n    const stuck       = (i > 0 ? jobs[i - 1] : null) || {};\n\n    node.warn('⏱️ Watchdog: stuck on erp_id ' + activeMeter +\n              ' (' + (stuck.name||'?') + ') for ' + Math.round(age/1000) +\n              's — force-skipping. queueIndex now ' + i);\n\n    flow.set('modbusDispatchTime', 0);\n    flow.set('currentDispatchId', null); // Destroy the lock so late packets bounce\n    flow.set('activeMeter', null);\n\n    return { payload: \"watchdog_skip\" }; \n}\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 150,
+        "y": 600,
+        "wires": [
+            [
+                "1b99c8f9b1a13d05"
+            ]
+        ]
+    },
+    {
+        "id": "6327f78a8db749d0",
+        "type": "inject",
+        "z": "e013fbbf3428f3ef",
+        "name": "⑩ Watchdog (10s)",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 420,
+        "wires": [
+            [
+                "1fb0bf2a98ef0ff8"
+            ]
+        ]
+    },
+    {
+        "id": "756e37f8abe4cefe",
+        "type": "debug",
+        "z": "e013fbbf3428f3ef",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "ad6703604fc2844b",
+        "type": "modbus-flex-getter",
+        "z": "e013fbbf3428f3ef",
+        "name": "Schneider @ utility2",
+        "showStatusActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "server": "fa898c0037dca726",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": true,
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "x": 540,
+        "y": 140,
+        "wires": [
+            [
+                "0821cd8ae46f3dee"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "24c44ce7e8db1f49",
+        "type": "modbus-flex-getter",
+        "z": "e013fbbf3428f3ef",
+        "name": "Secure @ utility2",
+        "showStatusActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "server": "c85bce3fcadfec81",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": true,
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "x": 540,
+        "y": 220,
+        "wires": [
+            [
+                "0821cd8ae46f3dee"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "ab104f24cd614e83",
+        "type": "modbus-flex-getter",
+        "z": "e013fbbf3428f3ef",
+        "name": "Secure @ utility1",
+        "showStatusActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "server": "f41904d838d82433",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": true,
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "x": 550,
+        "y": 280,
+        "wires": [
+            [
+                "0821cd8ae46f3dee"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "58563c41c297c28b",
+        "type": "modbus-flex-getter",
+        "z": "e013fbbf3428f3ef",
+        "name": "Schneider @ utility1",
+        "showStatusActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "server": "848fbf1da1412434",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": true,
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "x": 560,
+        "y": 380,
+        "wires": [
+            [
+                "0821cd8ae46f3dee"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "0bc33650781bf36e",
+        "type": "modbus-flex-getter",
+        "z": "e013fbbf3428f3ef",
+        "name": "FM @ utility1",
+        "showStatusActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "server": "178b05dcc49c6a3b",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": true,
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "x": 540,
+        "y": 460,
+        "wires": [
+            [
+                "0821cd8ae46f3dee"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "6fc061d7e943a576",
+        "type": "modbus-flex-getter",
+        "z": "e013fbbf3428f3ef",
+        "name": "FM @ utility2",
+        "showStatusActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "server": "654cbb80e0881f27",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": true,
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "x": 540,
+        "y": 540,
+        "wires": [
+            [
+                "0821cd8ae46f3dee"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "8e9432065f4e158e",
+        "type": "modbus-flex-getter",
+        "z": "e013fbbf3428f3ef",
+        "name": "FM @ yd bldng",
+        "showStatusActivities": false,
+        "showErrors": true,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "server": "5675d7785adf14a2",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": true,
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "x": 540,
+        "y": 620,
+        "wires": [
+            [
+                "0821cd8ae46f3dee"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "af1b21ed41ff0f44",
+        "type": "function",
+        "z": "e013fbbf3428f3ef",
+        "name": "⑥ Wait for Current Meter",
+        "func": "const job = msg.job || {};\nconst i = flow.get(\"queueIndex\") || 0;\nconst jobs = flow.get(\"queue\") || [];\n\n// Log meter completion\nnode.log(\"✅ [\" + i + \"/\" + (jobs.length || 0) + \"] Complete: \" + \n         (job.name || 'unknown'));\n\n// Reset state for next meter\nflow.set('currentDispatchId', null);\nflow.set('modbusDispatchTime', 0);\nflow.set('activeMeter', null);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 100,
+        "wires": [
+            [
+                "1b99c8f9b1a13d05"
+            ]
+        ]
+    },
+    {
+        "id": "27fe80f03843043d",
+        "type": "catch",
+        "z": "e013fbbf3428f3ef",
+        "name": "",
+        "scope": [
+            "ad6703604fc2844b",
+            "24c44ce7e8db1f49",
+            "ab104f24cd614e83",
+            "58563c41c297c28b",
+            "0bc33650781bf36e",
+            "6fc061d7e943a576",
+            "8e9432065f4e158e"
+        ],
+        "uncaught": false,
+        "x": 870,
+        "y": 480,
+        "wires": [
+            [
+                "59fdb21a2062ec20"
+            ]
+        ]
+    },
+    {
+        "id": "fa898c0037dca726",
+        "type": "modbus-client",
+        "name": "12.54 @ utility2",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "172.25.12.54",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "",
+        "commandDelay": 100,
+        "clientTimeout": 5000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 3000,
+        "parallelUnitIdsAllowed": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "c85bce3fcadfec81",
+        "type": "modbus-client",
+        "name": "12.55 @ utility2",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "172.25.12.55",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "",
+        "commandDelay": 100,
+        "clientTimeout": 3000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 2000,
+        "parallelUnitIdsAllowed": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "f41904d838d82433",
+        "type": "modbus-client",
+        "name": "12.52 @ utility1",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "172.25.12.52",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "",
+        "commandDelay": 100,
+        "clientTimeout": 3000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 2000,
+        "parallelUnitIdsAllowed": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "848fbf1da1412434",
+        "type": "modbus-client",
+        "name": "12.53 @ utility1",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "172.25.12.53",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "",
+        "commandDelay": 100,
+        "clientTimeout": 5000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 3000,
+        "parallelUnitIdsAllowed": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "178b05dcc49c6a3b",
+        "type": "modbus-client",
+        "name": "12.56 @ utility1",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "172.25.12.56",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "",
+        "commandDelay": 100,
+        "clientTimeout": 5000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 3000,
+        "parallelUnitIdsAllowed": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "654cbb80e0881f27",
+        "type": "modbus-client",
+        "name": "12.57 @ utility2",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "172.25.12.57",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "",
+        "commandDelay": 100,
+        "clientTimeout": 5000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 3000,
+        "parallelUnitIdsAllowed": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "5675d7785adf14a2",
+        "type": "modbus-client",
+        "name": "161.58 @ yd",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "192.168.161.58",
+        "tcpPort": 502,
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "",
+        "commandDelay": 100,
+        "clientTimeout": 5000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 3000,
+        "parallelUnitIdsAllowed": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "3138e30c3509bc0b",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-modbus": "5.45.2"
+        }
+    }
+]
