@@ -5,8 +5,6 @@ Modbus RS485 to ERPNext via Node-Red, a Smart Metering System.
 **Uttar Gazaria, Kaliakoir, Gazipur**									
 
 # Modbus Meter Network Configuration									
-		Protocol	Modbus TCT to RTU					Hardware Deployment	19-04-2026
-		Baud Rate	19200					Software Deployment	28-04-2026
-		Parity	Even					Software Finalization	12-05-2026
-<img width="1603" height="229" alt="image" src="https://github.com/user-attachments/assets/3e972cbb-69bb-4090-8a19-9e3f634e24dc" />
+<img width="1126" height="688" alt="image" src="https://github.com/user-attachments/assets/870024e9-77b2-4796-9cfe-5c70c13e0973" />
+
 
